@@ -33,6 +33,8 @@ Regra: `cd_mun <> '.'` no autocomplete e no ranking. Sem filtro nos agregados da
 
 Regra: `populacao` vem de `setor`. `sexo.homens` e `sexo.mulheres` vêm de `demografia`. `sexo.comDado = sum(moradores)`. `sexo.cobertura = comDado / populacao`. A tela mostra a cobertura. Nunca estimar sexo para setores sem demografia.
 
+Além dos 9.327 setores sem linha, cerca de 8,7 mil linhas de `demografia` existem com `homens`, `mulheres` e `moradores` nulos (`moradores` nulo implica os outros nulos). O `sum()` ignora nulos, então `comDado` já conta só setores com dado. "Linha existe" não é "tem dado".
+
 ## R3. Situação do setor: três categorias
 
 | `situacao` | Setores |

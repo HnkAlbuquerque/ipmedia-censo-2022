@@ -56,12 +56,12 @@ Prefixo `/api`. JSON. Erros 400 para parâmetros inválidos, 404 para município
 
 ## Bootstrap do banco (executa a cada subida do `api`)
 
-1. Copiar `censo.sqlite` para `DB_WORK_PATH` (default `/data/censo.work.sqlite`), sempre, sobrescrevendo. Comparar data é frágil: o `COPY` do Docker e volumes montados mudam o mtime.
-2. `CREATE INDEX IF NOT EXISTS` em `setor(cd_mun)` e `municipio(cd_uf)`.
-3. Adicionar coluna `municipio.nm_mun_busca` e preencher com `normalizar(nm_mun)`.
-4. `CREATE TABLE IF NOT EXISTS mun_agg` conforme `regras-de-dados.md`, preenchida com um `INSERT ... SELECT`.
-5. Idempotente: rodar duas vezes não duplica nada.
-6. Síncrono, em `onModuleInit` do módulo de banco, antes de o Nest abrir a porta. Assim `/api/health` só responde com os dados prontos e o healthcheck do compose não mente.
+1. Copiar `DB_SOURCE_PATH` para `DB_WORK_PATH`, sempre, sobrescrevendo. Comparar data é frágil: o `COPY` do Docker e volumes montados mudam o mtime. Na imagem, `ENV DB_SOURCE_PATH=/app/censo.sqlite DB_WORK_PATH=/data/censo.work.sqlite`; fora do Docker, defaults `<cwd>/../censo.sqlite` e `<cwd>/.data/censo.work.sqlite` (pasta ignorada pelo git), pensados para rodar de `api/`.
+2. `CREATE INDEX IF NOT EXISTS` em `setor(cd_mun)`, `municipio(cd_uf)` e `municipio(nm_mun_busca)`.
+3. Adicionar coluna `municipio.nm_mun_busca` se ausente (`PRAGMA table_info`) e preencher com `normalizar(nm_mun)` numa transação, em JS. A linha `cd_mun = '.'` fica com `''`: excluir por `cd_mun <> '.'`, nunca por `IS NULL`.
+4. `mun_agg` conforme `regras-de-dados.md`: `DROP TABLE IF EXISTS` + `CREATE TABLE` + `INSERT ... SELECT` dentro de uma transação, em `api/src/db/bootstrap.sql` (copiado para `dist/` como asset do Nest).
+5. Idempotente: rodar duas vezes não duplica nada. Implementado em `api/src/db/db.service.ts`, exposto pelo `DbModule` global.
+6. Síncrono, em `onModuleInit` do módulo de banco, antes de o Nest abrir a porta. Assim `/api/health` só responde com os dados prontos e o healthcheck do compose não mente. O health devolve `municipios: 5571` como prova.
 
 Tempo esperado: abaixo de 1 s.
 

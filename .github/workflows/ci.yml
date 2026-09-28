@@ -51,7 +51,8 @@ jobs:
       - run: docker compose build
       - run: docker compose up -d --wait
       # Mesmo caminho que o avaliador percorre: tudo via nginx em :8080.
-      - run: curl -sf localhost:8080/api/health | grep -q '"status":"ok"'
+      # Exige a contagem de mun_agg: prova que o bootstrap rodou, não só que a API subiu.
+      - run: curl -sf localhost:8080/api/health | grep -q '"status":"ok".*"municipios":5571'
       - run: curl -sf localhost:8080/ | grep -q 'Censo 2022'
       - run: curl -sf -o /dev/null localhost:8080/estado
       - if: always()

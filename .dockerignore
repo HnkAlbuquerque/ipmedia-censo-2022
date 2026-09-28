@@ -14,3 +14,4 @@ node_modules/
 .env
 api/test/
 **/*.spec.ts
+**/*.integration-spec.ts
