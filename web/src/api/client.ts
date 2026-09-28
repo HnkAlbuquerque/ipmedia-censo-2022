@@ -1,4 +1,4 @@
-import type { MunicipioDetalhe, Sugestao } from './tipos';
+import type { MunicipioDetalhe, RankingPagina, Sugestao, Uf, UfAgregado } from './tipos';
 
 /** Erro HTTP da API, com o status para a tela decidir a mensagem. */
 export class ErroApi extends Error {
@@ -15,11 +15,16 @@ export class ErroApi extends Error {
  * Texto para a tela a partir de qualquer erro do cliente. Só o `message` de um
  * `ErroApi` (a `message` do JSON do Nest) chega ao usuário; mensagens cruas do
  * navegador ("Failed to fetch") ou de exceções inesperadas nunca são exibidas.
+ * `naoEncontrado` é o texto do 404, que depende do que a tela pediu; `null`
+ * quando um 404 não tem leitura especial (lista) e cai na mensagem genérica.
  */
-export function descreverErro(e: unknown): string {
+export function descreverErro(
+  e: unknown,
+  naoEncontrado: string | null = 'Município não encontrado.',
+): string {
   if (e instanceof ErroApi) {
-    if (e.status === 404) {
-      return 'Município não encontrado.';
+    if (e.status === 404 && naoEncontrado !== null) {
+      return naoEncontrado;
     }
     return `A API respondeu com erro ${e.status} (${e.message}).`;
   }
@@ -67,4 +72,25 @@ export function buscarMunicipios(q: string, signal?: AbortSignal): Promise<Suges
 /** Agregados de um município pelo código do IBGE. */
 export function obterMunicipio(cdMun: string, signal?: AbortSignal): Promise<MunicipioDetalhe> {
   return obterJson<MunicipioDetalhe>(`/api/municipios/${encodeURIComponent(cdMun)}`, signal);
+}
+
+/** As 27 UFs em ordem alfabética de nome. */
+export function listarUfs(signal?: AbortSignal): Promise<Uf[]> {
+  return obterJson<Uf[]>('/api/ufs', signal);
+}
+
+/** Agregados de um estado pelo código do IBGE. */
+export function obterUf(cdUf: string, signal?: AbortSignal): Promise<UfAgregado> {
+  return obterJson<UfAgregado>(`/api/ufs/${encodeURIComponent(cdUf)}`, signal);
+}
+
+/** Uma página do ranking de densidade dos municípios do estado. */
+export function listarMunicipiosDaUf(
+  cdUf: string,
+  page: number,
+  pageSize: number,
+  signal?: AbortSignal,
+): Promise<RankingPagina> {
+  const query = new URLSearchParams({ page: String(page), pageSize: String(pageSize) });
+  return obterJson<RankingPagina>(`/api/ufs/${encodeURIComponent(cdUf)}/municipios?${query}`, signal);
 }

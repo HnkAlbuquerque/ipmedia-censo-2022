@@ -1,6 +1,7 @@
-// Espelho manual do contrato da API (stack.md, "Contrato da API"), cuja fonte
-// é api/src/municipios/municipios.types.ts: mudou lá, muda aqui. A API é a
-// única fonte dos números: o cliente formata, nunca agrega.
+// Espelho manual do contrato da API (stack.md, "Contrato da API"), cujas
+// fontes são api/src/municipios/municipios.types.ts (município) e
+// api/src/ufs/ufs.types.ts (UF): mudou lá, muda aqui. A API é a única fonte
+// dos números: o cliente formata, nunca agrega.
 
 export interface Uf {
   cdUf: string;
@@ -39,4 +40,36 @@ export interface MunicipioDetalhe {
     /** comDado / populacao, entre 0 e 1. */
     cobertura: number;
   };
+}
+
+/** Agregado de um estado: `GET /api/ufs/:cdUf`. Soma inclui a linha sem município (R1). */
+export interface UfAgregado extends Uf {
+  populacao: number;
+  /** km², já com 2 casas. */
+  areaKm2: number;
+  /** hab/km², já com 2 casas. */
+  densidade: number;
+  /** Municípios listáveis no ranking. */
+  totalMunicipios: number;
+}
+
+/** Linha do ranking de densidade: `GET /api/ufs/:cdUf/municipios`. */
+export interface RankingItem {
+  /** Calculada no servidor: `(page - 1) * pageSize + índice + 1`. */
+  posicao: number;
+  cdMun: string;
+  nome: string;
+  populacao: number;
+  /** km², já com 2 casas. */
+  areaKm2: number;
+  /** hab/km², já com 2 casas. */
+  densidade: number;
+}
+
+/** Página do ranking; `total` é o mesmo em toda página. */
+export interface RankingPagina {
+  total: number;
+  page: number;
+  pageSize: number;
+  itens: RankingItem[];
 }

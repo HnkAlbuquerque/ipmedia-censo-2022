@@ -103,10 +103,10 @@ Medição local: ranking de SP cai de 72 ms (cru) para 23 ms (índice) para 0,9 
 | São Paulo capital população | 11.451.999 |
 | São Paulo capital área | 1.521,2 km² |
 | São Paulo capital sexo | 5.380.188 homens, 6.060.887 mulheres, 11.441.079 com dado |
-| Ranking SP (`cd_uf = 35`) total | 645, primeiro: Taboão da Serra, 13.417 hab/km² |
+| Ranking SP (`cd_uf = 35`) total | 645, primeiro: Taboão da Serra, 13.416,96 hab/km² |
 | Ranking RR (`cd_uf = 14`) total | 15 |
 | RS (`cd_uf = 43`) municípios listados | 497 |
-| RS área total | 281.707,2 km² |
+| RS área total | 281.707,15 km² (2 casas; 281.707,2 com 1 casa) |
 | `normalizar('São Gonçalo')` | `sao goncalo` |
 | Autocomplete `q=sao` | São Paulo (SP) em primeiro |
 | Autocomplete `q=paulo` | São Paulo (SP) em primeiro |
