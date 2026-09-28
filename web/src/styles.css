@@ -39,3 +39,205 @@ body {
 .conteudo {
   padding: 1.5rem;
 }
+
+/* --- Tela 1: busca de município --- */
+.contexto {
+  max-width: 40rem;
+  margin: 0 0 1rem;
+  color: #52606d;
+}
+
+.autocomplete {
+  position: relative;
+  max-width: 28rem;
+}
+
+.autocomplete__rotulo {
+  display: block;
+  margin-bottom: 0.25rem;
+  font-weight: 600;
+}
+
+.autocomplete__campo {
+  width: 100%;
+  box-sizing: border-box;
+  padding: 0.6rem 0.75rem;
+  font: inherit;
+  border: 1px solid #9aa5b1;
+  border-radius: 0.375rem;
+  background: #fff;
+}
+
+.autocomplete__campo:focus {
+  outline: 2px solid #0f4c81;
+  outline-offset: 1px;
+}
+
+.autocomplete__dica {
+  margin: 0.25rem 0 0;
+  font-size: 0.875rem;
+  color: #52606d;
+}
+
+.autocomplete__painel {
+  position: absolute;
+  z-index: 10;
+  left: 0;
+  right: 0;
+  margin-top: 0.25rem;
+  border: 1px solid #cbd2d9;
+  border-radius: 0.375rem;
+  background: #fff;
+  box-shadow: 0 4px 12px rgba(31, 41, 51, 0.12);
+}
+
+.autocomplete__estado {
+  margin: 0;
+  padding: 0.6rem 0.75rem;
+  color: #52606d;
+}
+
+.autocomplete__estado--erro {
+  color: #a61b1b;
+}
+
+.autocomplete__lista {
+  list-style: none;
+  margin: 0;
+  padding: 0.25rem 0;
+  max-height: 20rem;
+  overflow-y: auto;
+}
+
+.autocomplete__opcao {
+  padding: 0.5rem 0.75rem;
+  cursor: pointer;
+}
+
+.autocomplete__opcao--ativa {
+  background: #dbeafe;
+}
+
+.estado {
+  margin: 1.5rem 0 0;
+  color: #52606d;
+}
+
+.estado--erro {
+  color: #a61b1b;
+}
+
+.cartoes {
+  margin-top: 2rem;
+}
+
+.cartoes__titulo {
+  margin: 0 0 1rem;
+  font-size: 1.5rem;
+}
+
+.cartoes__uf {
+  font-weight: 400;
+  color: #52606d;
+  font-size: 1rem;
+}
+
+.cartoes__grade {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(14rem, 1fr));
+  gap: 1rem;
+}
+
+.cartao {
+  padding: 1rem 1.25rem;
+  border: 1px solid #e4e7eb;
+  border-radius: 0.5rem;
+  background: #fff;
+}
+
+.cartao--largo {
+  grid-column: 1 / -1;
+}
+
+.cartao h4 {
+  margin: 0 0 0.5rem;
+  font-size: 0.875rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  color: #52606d;
+}
+
+.cartao__valor {
+  margin: 0;
+  font-size: 1.75rem;
+  font-weight: 700;
+}
+
+.cartao__unidade {
+  margin: 0;
+  color: #52606d;
+}
+
+.cartao__nota {
+  margin: 0.75rem 0 0;
+  font-size: 0.875rem;
+  color: #52606d;
+}
+
+/* Barras simples: uma faixa empilhada, sem biblioteca de gráficos. */
+.barras {
+  display: flex;
+  height: 1rem;
+  margin: 0.75rem 0 0.5rem;
+  border-radius: 0.25rem;
+  overflow: hidden;
+  background: #e4e7eb;
+}
+
+.barras__fatia {
+  display: block;
+  height: 100%;
+}
+
+.legenda {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem 1.5rem;
+  margin: 0;
+}
+
+.legenda__item {
+  display: flex;
+  gap: 0.5rem;
+  align-items: baseline;
+}
+
+.legenda dt,
+.legenda dd {
+  margin: 0;
+}
+
+.legenda dd {
+  font-weight: 600;
+}
+
+.legenda__percentual {
+  font-weight: 400;
+  color: #52606d;
+}
+
+.legenda__cor {
+  display: inline-block;
+  width: 0.75rem;
+  height: 0.75rem;
+  margin-right: 0.35rem;
+  border-radius: 0.125rem;
+  vertical-align: middle;
+}
+
+.cor-urbano { background: #0f4c81; }
+.cor-rural { background: #2f855a; }
+.cor-nao-informado { background: #9aa5b1; }
+.cor-homens { background: #2b6cb0; }
+.cor-mulheres { background: #b83280; }
