@@ -47,7 +47,16 @@ Regra: `setores.urbanos + setores.rurais + setores.naoInformados = setores.total
 
 232 nomes existem em mais de uma UF (Bom Jesus: PI, RN, PB, SC, RS). `LIKE` do SQLite ignora caixa só em ASCII.
 
-Regra: coluna `nm_mun_busca = normalizar(nm_mun)`. Busca é `nm_mun_busca LIKE normalizar(q) || '%'`. Toda sugestão carrega a UF. Seleção usa `cd_mun`.
+Regra: coluna `nm_mun_busca = normalizar(nm_mun)`. Busca por prefixo de palavra: `nm_mun_busca LIKE t || '%' OR nm_mun_busca LIKE '% ' || t || '%'`, com `t = normalizar(q)`. Ordem: `CASE WHEN nm_mun_busca = t THEN 0 ELSE 1 END, populacao DESC`. Toda sugestão carrega a UF. Seleção usa `cd_mun`.
+
+Por que essa ordem e não alfabética (medido no arquivo):
+
+| `q` | Casos | Alfabético mostra nos 10 primeiros | Nome exato + população mostra |
+|---|---|---|---|
+| `sao` | 344 | São Benedito, São Bentinho... sem São Paulo | São Paulo, São Luís, São Gonçalo... |
+| `rio` | 64 | Rio Acima, Rio Azul... sem Rio de Janeiro | Rio de Janeiro, Rio Branco, Rio Verde... |
+| `bom jesus` | 20 | os 5 exatos misturados com compostos | os 5 exatos primeiro, depois Bom Jesus da Lapa |
+| `paulo` | 14 (prefixo de palavra) | prefixo simples: só Paulo Afonso, Paulo Ramos | São Paulo, Paulo Afonso, São Paulo de Olivença... |
 
 ## R5. Tabela agregada `mun_agg`
 
@@ -70,12 +79,22 @@ Medição local: ranking de SP cai de 72 ms (cru) para 23 ms (índice) para 0,9 
 
 `page` default 1, `pageSize` default 50, máximo 100. Ordem: densidade decrescente, desempate por `cd_mun` crescente. `posicao` calculada no servidor: `(page - 1) * pageSize + índice + 1`.
 
+## R7. Precisão numérica
+
+`area_km2` tem 7 casas decimais no arquivo. Somar 27 mil setores em ordens diferentes desloca a 12ª casa; o Brasil inteiro, a 7ª. Medido em São Paulo capital: 1521,2015838999994 contra 1521,2015839 exato.
+
+| Onde | Regra |
+|---|---|
+| Servidor | `areaKm2` e `densidade` arredondadas a 2 casas antes de responder. `populacao` inteira, sem arredondar |
+| Teste e2e dos endpoints | Comparação exata (`toBe(1521.2)`), porque o valor já passou pelo arredondamento |
+| Teste de integração do bootstrap | Soma crua de `mun_agg.area_km2` contra 8.510.417,25 com tolerância 0,01. Não 0,5: esconderia um setor de 0,4 km² faltando |
+
 ## Valores de referência para testes
 
 | Verificação | Esperado |
 |---|---|
 | `sum(mun_agg.populacao)` | 203.080.756 |
-| `sum(mun_agg.area_km2)` | 8.510.417,25 (tolerância 0,5) |
+| `sum(mun_agg.area_km2)` | 8.510.417,25 (tolerância 0,01) |
 | `count(mun_agg)` | 5.571 |
 | `count(mun_agg where cd_mun <> '.')` | 5.570 |
 | São Paulo capital (`3550308`) setores | 27.301 = 27.037 urbanos + 254 rurais + 10 não informados |
@@ -87,6 +106,9 @@ Medição local: ranking de SP cai de 72 ms (cru) para 23 ms (índice) para 0,9 
 | RS (`cd_uf = 43`) municípios listados | 497 |
 | RS área total | 281.707,2 km² |
 | `normalizar('São Gonçalo')` | `sao goncalo` |
-| Autocomplete `q=sao pa` | contém São Paulo (SP) |
-| Autocomplete `q=bom jesus` | 5 itens, 5 UFs diferentes |
+| Autocomplete `q=sao` | São Paulo (SP) em primeiro |
+| Autocomplete `q=paulo` | São Paulo (SP) em primeiro |
+| Autocomplete `q=rio` | Rio de Janeiro (RJ) em primeiro |
+| Autocomplete `q=bom jesus` | 5 primeiros com nome exato "Bom Jesus", 5 UFs diferentes; Bom Jesus da Lapa depois |
 | Autocomplete nunca retorna | item com nome vazio |
+| `GET /api/municipios/3550308` | `areaKm2 = 1521.2` exato, `densidade = 7528.26` exato |

@@ -19,7 +19,7 @@ Teste técnico para vaga full stack na ipmedia. O enunciado entrega o `censo.sql
 
 - **CAP-1**
   - **intent:** Usuário digita parte do nome de um município e recebe sugestões com a UF, para escolher o município certo mesmo entre homônimos.
-  - **success:** `q=sao pa` retorna São Paulo (SP); `q=bom jesus` retorna 5 itens com 5 UFs distintas; nenhuma sugestão sem nome; máximo 10 itens.
+  - **success:** `q=sao` retorna São Paulo (SP) em primeiro; `q=paulo` retorna São Paulo em primeiro; `q=rio` retorna Rio de Janeiro em primeiro; `q=bom jesus` retorna os 5 "Bom Jesus" exatos, com 5 UFs distintas, antes de Bom Jesus da Lapa; nenhuma sugestão sem nome; máximo 10 itens.
 
 - **CAP-2**
   - **intent:** Usuário seleciona um município e vê população total, quantidade de setores, área, densidade, divisão urbano/rural/não informado e distribuição por sexo com a cobertura do dado.
@@ -35,7 +35,7 @@ Teste técnico para vaga full stack na ipmedia. O enunciado entrega o `censo.sql
 
 - **CAP-5**
   - **intent:** Avaliador clona o repositório em uma máquina com só Docker e sobe tudo com um comando.
-  - **success:** `docker compose up` deixa as duas telas funcionando no navegador sem nenhum passo manual; o bootstrap dos dados derivados roda sozinho.
+  - **success:** `docker compose up` deixa as duas telas funcionando no navegador sem nenhum passo manual; o bootstrap dos dados derivados roda sozinho; a primeira requisição do navegador já responde, sem 502 enquanto a API sobe.
 
 - **CAP-6**
   - **intent:** Testes automatizados cobrem back e front.
@@ -57,8 +57,11 @@ Teste técnico para vaga full stack na ipmedia. O enunciado entrega o `censo.sql
 - Registro `cd_mun = '.'` sai das listas e fica nas somas (R1). Não há terceira opção.
 - População total vem de `setor`; sexo vem de `demografia` com cobertura explícita. Nunca estimar (R2).
 - Setores sempre em três categorias que somam o total (R3).
-- Busca por prefixo, sem acento e sem caixa, via coluna normalizada e uma única função de normalização (R4).
+- Busca por prefixo de palavra, sem acento e sem caixa, via coluna normalizada e uma única função de normalização; ordem: nome exato primeiro, depois população (R4).
 - Ranking sempre paginado, `pageSize` máximo 100, ordem estável (R6).
+- Área e densidade arredondadas a duas casas no servidor; população inteira e exata (R7).
+- A API só é exposta depois do bootstrap: healthcheck na `api` e o `web` espera `service_healthy`. Imagem base glibc por causa do `better-sqlite3` (`stack.md`).
+- Docker é a única forma de entrega e é testado ao fim de cada story. O proxy do Vite existe só para desenvolvimento.
 - Commits pequenos e frequentes com Conventional Commits. Sem squash. Artefatos do BMAD versionados.
 - Entrega: um único repositório público (ou com acesso concedido), `censo.sqlite` na raiz, histórico preservado.
 
@@ -67,7 +70,7 @@ Teste técnico para vaga full stack na ipmedia. O enunciado entrega o `censo.sql
 - Autenticação, usuários, permissões.
 - Mapa ou geolocalização.
 - Filtro de nome dentro do ranking da UF.
-- Busca por substring no meio do nome.
+- Busca por substring no meio de uma palavra ("aulo" não acha São Paulo).
 - Deploy em nuvem. Termina no CI.
 - Cache distribuído ou banco externo.
 - Internacionalização.
@@ -76,7 +79,7 @@ Teste técnico para vaga full stack na ipmedia. O enunciado entrega o `censo.sql
 
 ## Success signal
 
-Em uma máquina limpa, `docker compose up`, digitar "sao pa", selecionar São Paulo (SP) e ver 11.451.999 habitantes; abrir a segunda tela, escolher São Paulo e ver 645 municípios em páginas de 50 com Taboão da Serra no topo. O histórico de commits conta a história, e o README responde cada "por quê".
+Em uma máquina limpa, `docker compose up`, digitar "sao", ver São Paulo (SP) no topo, selecionar e ver 11.451.999 habitantes; abrir a segunda tela, escolher São Paulo e ver 645 municípios em páginas de 50 com Taboão da Serra no topo. O histórico de commits conta a história, e o README responde cada "por quê".
 
 ## Assumptions
 
@@ -86,4 +89,4 @@ Em uma máquina limpa, `docker compose up`, digitar "sao pa", selecionar São Pa
 
 ## Open Questions
 
-- O agregado da UF (CAP-4) vem no mesmo payload do ranking ou em endpoint próprio? `stack.md` propõe endpoint próprio (`GET /api/ufs/:cdUf`); confirmar na primeira story da tela 2.
+- O agregado da UF (CAP-4) vem no mesmo payload do ranking ou em endpoint próprio? `stack.md` propõe endpoint próprio (`GET /api/ufs/:cdUf`) e a story 4 assume isso; confirmar no checkpoint da story 4.
