@@ -49,7 +49,7 @@ Regra: `setores.urbanos + setores.rurais + setores.naoInformados = setores.total
 
 232 nomes existem em mais de uma UF (Bom Jesus: PI, RN, PB, SC, RS). `LIKE` do SQLite ignora caixa só em ASCII.
 
-Regra: coluna `nm_mun_busca = normalizar(nm_mun)`. Busca por prefixo de palavra: `nm_mun_busca LIKE t || '%' OR nm_mun_busca LIKE '% ' || t || '%'`, com `t = normalizar(q)`. Ordem: `CASE WHEN nm_mun_busca = t THEN 0 ELSE 1 END, populacao DESC`. Toda sugestão carrega a UF. Seleção usa `cd_mun`.
+Regra: coluna `nm_mun_busca = normalizar(nm_mun)`. Busca por prefixo de palavra, com `t = normalizar(q)` e curingas escapados: `nm_mun_busca LIKE t || '%'` ou precedido por um separador de palavra, que é espaço, hífen ou apóstrofo (`'% ' || t || '%'`, `'%-' || t || '%'`, `'%''' || t || '%'`); 71 municípios têm hífen ou apóstrofo no nome, e "mirim" precisa achar Guajará-Mirim. Ordem: `CASE WHEN nm_mun_busca = t THEN 0 ELSE 1 END, populacao DESC, nm_mun, cd_mun` (o `cd_mun` no fim torna a ordem determinística entre homônimos de população igual). Termo com menos de 2 caracteres ou mais de 100 devolve 400. Toda sugestão carrega a UF. Seleção usa `cd_mun`.
 
 Por que essa ordem e não alfabética (medido no arquivo):
 
