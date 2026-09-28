@@ -1,0 +1,22 @@
+services:
+  api:
+    build:
+      # Contexto na raiz porque censo.sqlite fica fora de api/.
+      context: .
+      dockerfile: api/Dockerfile
+    # bookworm-slim não traz curl; o healthcheck usa o fetch do próprio Node.
+    healthcheck:
+      test: ["CMD", "node", "-e", "fetch('http://127.0.0.1:3000/api/health').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+      start_period: 10s
+
+  web:
+    build:
+      context: ./web
+    ports:
+      - "8080:80"
+    depends_on:
+      api:
+        condition: service_healthy

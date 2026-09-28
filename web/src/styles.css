@@ -1,0 +1,41 @@
+/* Estilo mínimo, sem framework: um arquivo só. */
+:root {
+  font-family: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+  color: #1f2933;
+  background: #f8fafc;
+}
+
+body {
+  margin: 0;
+}
+
+.cabecalho {
+  padding: 1rem 1.5rem;
+  background: #0f4c81;
+  color: #fff;
+}
+
+.cabecalho h1 {
+  margin: 0 0 0.5rem;
+  font-size: 1.5rem;
+}
+
+.navegacao {
+  display: flex;
+  gap: 1rem;
+}
+
+.navegacao a {
+  color: #dbeafe;
+  text-decoration: none;
+}
+
+.navegacao a.active {
+  color: #fff;
+  font-weight: 600;
+  text-decoration: underline;
+}
+
+.conteudo {
+  padding: 1.5rem;
+}

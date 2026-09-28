@@ -1,0 +1,16 @@
+# Contexto de build da api é a raiz: só api/ e censo.sqlite interessam.
+.git/
+.github/
+.claude/
+_bmad/
+_bmad-output/
+docs/
+web/
+node_modules/
+**/node_modules/
+**/dist/
+**/coverage/
+*.md
+.env
+api/test/
+**/*.spec.ts
