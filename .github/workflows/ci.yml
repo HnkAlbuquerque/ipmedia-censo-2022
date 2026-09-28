@@ -55,5 +55,10 @@ jobs:
       - run: curl -sf localhost:8080/api/health | grep -q '"status":"ok".*"municipios":5571'
       - run: curl -sf localhost:8080/ | grep -q 'Censo 2022'
       - run: curl -sf -o /dev/null localhost:8080/estado
+      # Um valor de referência por endpoint (regras-de-dados.md), via nginx.
+      - run: curl -sf 'localhost:8080/api/municipios?q=sao' | grep -q 'São Paulo'
+      - run: curl -sf localhost:8080/api/municipios/3550308 | grep -q '"densidade":7528.26'
+      - run: curl -sf localhost:8080/api/ufs/35 | grep -q '"totalMunicipios":645'
+      - run: curl -sf 'localhost:8080/api/ufs/35/municipios?page=2' | grep -q '"posicao":51'
       - if: always()
         run: docker compose down -v

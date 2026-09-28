@@ -4,3 +4,6 @@
 - source_spec: `_bmad-output/specs/spec-censo-municipios/stories/2-bootstrap-dos-dados-derivados.md`
   summary: AGENTS.md deve registrar o sufixo `*.integration-spec.ts` (roda no `npm test`), as envs `DB_SOURCE_PATH`/`DB_WORK_PATH` com seus defaults e a pasta local `.data/`.
   evidence: Achado do blind-hunter na story 2; bloco gerido por bmad-project-context, resolver junto com o item da story 1 via `refresh`.
+- source_spec: `_bmad-output/specs/spec-censo-municipios/stories/4-tela-de-busca-por-estado.md`
+  summary: Contrato API/web é verificado só contra a cópia manual de tipos de cada lado; um rename de campo passaria com as duas suítes verdes. Fechar com tipos compartilhados (pacote comum) ou e2e de navegador (Playwright).
+  evidence: Achado do verification-gap na story 4, mesmo desenho da story 3; mitigado parcialmente pelos greps do compose no CI. Entra no "com mais tempo" do README.
