@@ -1,0 +1,69 @@
+- id: "1"
+  title: Esqueleto com Docker Compose e CI
+  description: >-
+    NestJS com healthcheck em /api/health, React com Vite vazio, docker-compose
+    com serviços api e web (nginx servindo o build e proxy /api), workflow do
+    GitHub Actions rodando testes dos dois lados e docker compose build.
+    Cobre CAP-5 e CAP-7 da SPEC.md.
+  invoke_dev_with: >-
+    Seguir a estrutura de pastas e as versões de stack.md. Multi-stage build nos
+    dois Dockerfiles. O censo.sqlite é copiado para a imagem da api. Entregar com
+    um teste e2e do healthcheck e um teste de render do App no front, para o CI
+    já rodar verde. Definition of Done: código com testes na mesma story.
+
+- id: "2"
+  title: Bootstrap dos dados derivados
+  description: >-
+    Ao subir a api, copiar censo.sqlite para DB_WORK_PATH, criar índices,
+    coluna nm_mun_busca, tabela mun_agg, função normalizar() e mapa cd_uf para
+    sigla, tudo idempotente. Implementa R1 a R5 de regras-de-dados.md.
+  spec_checkpoint: true
+  invoke_dev_with: >-
+    Nunca alterar o censo.sqlite versionado. Uma única implementação de
+    normalizar() em api/src/common/, usada no bootstrap e na busca. mun_agg
+    inclui a linha cd_mun='.' (o filtro é das consultas de lista, não do
+    bootstrap). Entregar com teste unitário de normalizar() e teste de
+    integração do bootstrap conferindo a tabela de valores de referência de
+    regras-de-dados.md. Definition of Done: código com testes na mesma story.
+
+- id: "3"
+  title: Tela de busca de município
+  description: >-
+    Endpoints GET /api/municipios?q= e GET /api/municipios/:cdMun conforme o
+    contrato de stack.md, e a tela com autocomplete e cartões de população,
+    setores, área, densidade, urbano/rural/não informado e sexo com cobertura.
+    Cobre CAP-1 e CAP-2.
+  invoke_dev_with: >-
+    Autocomplete: mínimo 2 caracteres, debounce de 300 ms, até 10 sugestões no
+    formato "Nome - UF", seleção por cdMun, excluir cd_mun='.'. Entregar com e2e
+    dos dois endpoints (Supertest) e testes de front das duas interações (digitar
+    e selecionar) com API mockada. Definition of Done: código com testes na
+    mesma story.
+
+- id: "4"
+  title: Tela de busca por estado
+  description: >-
+    Endpoints GET /api/ufs, GET /api/ufs/:cdUf e GET /api/ufs/:cdUf/municipios
+    paginado, e a tela com seleção de UF, agregados do estado e tabela ranqueada
+    por densidade com paginação. Cobre CAP-3 e CAP-4.
+  spec_checkpoint: true
+  invoke_dev_with: >-
+    Ordem por densidade decrescente com desempate por cd_mun; posicao calculada
+    no servidor; pageSize default 50 e máximo 100 com 400 fora da faixa; ranking
+    exclui cd_mun='.' mas o agregado da UF inclui. Resolver a pergunta em aberto
+    da SPEC.md: agregado da UF em endpoint próprio, como stack.md propõe.
+    Entregar com e2e dos três endpoints (incluindo SP com total 645 e RR com 15)
+    e testes de front de seleção e troca de página com API mockada. Definition
+    of Done: código com testes na mesma story.
+
+- id: "5"
+  title: README com instalação e decisões
+  description: >-
+    README na raiz com instalação e execução em um comando, contrato da API,
+    cada decisão técnica com o porquê (R1 a R6 e stack), o uso do BMAD no fluxo
+    spec, stories, PR, CI, e a seção "o que faria com mais tempo". Cobre CAP-8.
+  invoke_dev_with: >-
+    Fonte das decisões: regras-de-dados.md, stack.md e .memlog.md. Incluir a nota
+    sobre a área do RS e as lagoas (R1) e a cobertura do dado por sexo (R2).
+    "Com mais tempo": Playwright, filtro de nome no ranking, prefixo por palavra
+    na busca, deploy em ECS na AWS.
