@@ -51,14 +51,14 @@ Regra: `setores.urbanos + setores.rurais + setores.naoInformados = setores.total
 
 Regra: coluna `nm_mun_busca = normalizar(nm_mun)`. Busca por prefixo de palavra, com `t = normalizar(q)` e curingas escapados: `nm_mun_busca LIKE t || '%'` ou precedido por um separador de palavra, que é espaço, hífen ou apóstrofo (`'% ' || t || '%'`, `'%-' || t || '%'`, `'%''' || t || '%'`); 71 municípios têm hífen ou apóstrofo no nome, e "mirim" precisa achar Guajará-Mirim. Ordem: `CASE WHEN nm_mun_busca = t THEN 0 ELSE 1 END, populacao DESC, nm_mun, cd_mun` (o `cd_mun` no fim torna a ordem determinística entre homônimos de população igual). Termo com menos de 2 caracteres ou mais de 100 devolve 400. Toda sugestão carrega a UF. Seleção usa `cd_mun`.
 
-Por que essa ordem e não alfabética (medido no arquivo):
+Por que essa ordem e não alfabética (medido no arquivo com a regra de prefixo de palavra; contagens por prefixo simples seriam 344, 64, 20 e 7):
 
 | `q` | Casos | Alfabético mostra nos 10 primeiros | Nome exato + população mostra |
 |---|---|---|---|
-| `sao` | 344 | São Benedito, São Bentinho... sem São Paulo | São Paulo, São Luís, São Gonçalo... |
-| `rio` | 64 | Rio Acima, Rio Azul... sem Rio de Janeiro | Rio de Janeiro, Rio Branco, Rio Verde... |
-| `bom jesus` | 20 | os 5 exatos misturados com compostos | os 5 exatos primeiro, depois Bom Jesus da Lapa |
-| `paulo` | 14 (prefixo de palavra) | prefixo simples: só Paulo Afonso, Paulo Ramos | São Paulo, Paulo Afonso, São Paulo de Olivença... |
+| `sao` | 364 | São Benedito, São Bentinho... sem São Paulo | São Paulo, São Luís, São Gonçalo... |
+| `rio` | 104 | Rio Acima, Rio Azul... sem Rio de Janeiro | Rio de Janeiro, Rio Branco, Rio Verde... |
+| `bom jesus` | 23 | os 5 exatos misturados com compostos | os 5 exatos primeiro, depois Bom Jesus da Lapa |
+| `paulo` | 14 | prefixo simples: só os 7 que começam com Paulo (Paulo Afonso, Paulo Ramos...) | São Paulo, Paulo Afonso, São Paulo de Olivença... |
 
 ## R5. Tabela agregada `mun_agg`
 
