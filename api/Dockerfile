@@ -15,7 +15,11 @@ ENV NODE_ENV=production
 COPY api/package.json api/package-lock.json ./
 RUN npm ci --omit=dev
 COPY --from=build /app/dist ./dist
-# Dado entregue pelo avaliador, copiado sem alteração.
+# Dado entregue pelo avaliador, copiado sem alteração. A API nunca o abre para
+# escrita: no startup ela o copia para DB_WORK_PATH e cria os derivados lá.
 COPY censo.sqlite /app/censo.sqlite
+ENV DB_SOURCE_PATH=/app/censo.sqlite DB_WORK_PATH=/data/censo.work.sqlite
+RUN mkdir -p /data && chown node:node /data
+USER node
 EXPOSE 3000
 CMD ["node", "dist/main"]
