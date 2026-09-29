@@ -37,6 +37,9 @@ function configurarDocumentacao(app: INestApplication): void {
       'Consulta ao Censo Demográfico 2022 do IBGE por município e por UF.',
     )
     .setVersion(versaoDaApi())
+    .addTag('Municípios', 'Autocomplete e agregados por município')
+    .addTag('UFs', 'Lista de estados, agregados e ranking de densidade')
+    .addTag('Healthcheck', 'Prontidão da API, usada pelo Docker Compose')
     .build();
   const documento = SwaggerModule.createDocument(app, configuracao);
   SwaggerModule.setup('docs', app, documento, {
