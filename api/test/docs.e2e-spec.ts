@@ -1,6 +1,6 @@
 import { INestApplication } from '@nestjs/common';
 import { Test } from '@nestjs/testing';
-import { rmSync } from 'node:fs';
+import { readFileSync, rmSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import request from 'supertest';
@@ -53,6 +53,7 @@ interface Operacao {
 interface Documento {
   openapi: string;
   info: { title: string; version: string };
+  tags: { name: string; description?: string }[];
   paths: Record<string, Record<string, Operacao>>;
   components: { schemas: Record<string, Esquema> };
 }
@@ -86,6 +87,15 @@ const ref = (nome: string) => `#/components/schemas/${nome}`;
 const referencia = (esquema?: Esquema): string | undefined =>
   esquema?.$ref ?? esquema?.allOf?.[0]?.$ref;
 
+/** Versão declarada em `api/package.json`, a mesma que o setup publica. */
+const versaoDoPacote = (
+  JSON.parse(
+    readFileSync(join(__dirname, '..', 'package.json'), 'utf8'),
+  ) as { version: string }
+).version;
+
+const chaves = (objeto: object): string[] => Object.keys(objeto).sort();
+
 /**
  * Linhas da matriz da story 6 que tocam `/api/docs` e `/api/docs-json`
  * (CAP-9). O documento é gerado a partir dos controllers e das classes de
@@ -104,6 +114,48 @@ describe('Documentação da API (e2e)', () => {
 
   const esquemaDaResposta = (rota: string, status: string): Esquema | undefined =>
     operacao(rota).responses[status]?.content?.['application/json']?.schema;
+
+  /** Esquema de `components.schemas` apontado por um `$ref` ou `allOf`. */
+  const resolver = (esquema?: Esquema): Esquema => {
+    const alvo = referencia(esquema);
+    if (!alvo) {
+      throw new Error('Esquema sem referência a components.schemas');
+    }
+    return documento.components.schemas[alvo.replace(ref(''), '')];
+  };
+
+  /** Esquema do corpo 200 da rota; em rota que devolve lista, o do item. */
+  const esquemaDoCorpo = (rota: string): Esquema => {
+    const esquema = esquemaDaResposta(rota, '200');
+    return resolver(esquema?.type === 'array' ? esquema.items : esquema);
+  };
+
+  const campos = (esquema: Esquema): string[] => chaves(esquema.properties ?? {});
+
+  /** Esquema de um campo aninhado (`uf`, `setores`, `sexo`, `itens`). */
+  const aninhado = (esquema: Esquema, campo: string): Esquema => {
+    const propriedade = esquema.properties?.[campo];
+    return resolver(
+      propriedade?.type === 'array' ? propriedade.items : propriedade,
+    );
+  };
+
+  /** Os `example` de um esquema, só dos campos que têm exemplo próprio. */
+  const exemplos = (nome: string): Record<string, unknown> =>
+    Object.fromEntries(
+      Object.entries(documento.components.schemas[nome].properties ?? {})
+        .filter(([, propriedade]) => propriedade.example !== undefined)
+        .map(([campo, propriedade]) => [campo, propriedade.example]),
+    );
+
+  /** Do corpo real, só os campos que o esquema documenta com exemplo. */
+  const valores = (
+    nome: string,
+    corpo: Record<string, unknown>,
+  ): Record<string, unknown> =>
+    Object.fromEntries(
+      Object.keys(exemplos(nome)).map((campo) => [campo, corpo[campo]]),
+    );
 
   beforeAll(async () => {
     const modulo = await Test.createTestingModule({
@@ -130,7 +182,7 @@ describe('Documentação da API (e2e)', () => {
 
       expect(resposta.body.openapi).toMatch(/^3\./);
       expect(resposta.body.info.title).toBe('Censo 2022 API');
-      expect(resposta.body.info.version).toMatch(/^\d+\.\d+\.\d+$/);
+      expect(resposta.body.info.version).toBe(versaoDoPacote);
     });
 
     it('documenta exatamente as seis rotas, todas e só com GET', () => {
@@ -144,6 +196,13 @@ describe('Documentação da API (e2e)', () => {
       const grupos = new Set(ROTAS.flatMap((rota) => operacao(rota).tags));
 
       expect(grupos.size).toBe(3);
+      // Grupo usado em rota e grupo descrito no documento são os mesmos.
+      expect([...grupos].sort()).toEqual(
+        documento.tags.map((tag) => tag.name).sort(),
+      );
+      for (const tag of documento.tags) {
+        expect(tag.description).toBeTruthy();
+      }
       for (const rota of ROTAS) {
         expect(operacao(rota).tags).toHaveLength(1);
         expect(operacao(rota).summary).toBeTruthy();
@@ -186,13 +245,13 @@ describe('Documentação da API (e2e)', () => {
       expect(parametro('/api/municipios/{cdMun}', 'cdMun')).toMatchObject({
         in: 'path',
         required: true,
-        schema: { type: 'string', example: '3550308' },
+        schema: { type: 'string', pattern: '^\\d{7}$', example: '3550308' },
       });
       for (const rota of ['/api/ufs/{cdUf}', '/api/ufs/{cdUf}/municipios']) {
         expect(parametro(rota, 'cdUf')).toMatchObject({
           in: 'path',
           required: true,
-          schema: { type: 'string', example: '35' },
+          schema: { type: 'string', pattern: '^\\d{2}$', example: '35' },
         });
       }
     });
@@ -261,14 +320,75 @@ describe('Documentação da API (e2e)', () => {
       }
     });
 
-    it('os exemplos são os valores reais de São Paulo', () => {
-      const { schemas } = documento.components;
+    it('os exemplos de município são os valores reais de São Paulo capital', async () => {
+      const { body } = await get('/api/municipios/3550308').expect(200);
 
-      expect(schemas.MunicipioDetalhe.properties?.cdMun.example).toBe('3550308');
-      expect(schemas.MunicipioDetalhe.properties?.populacao.example).toBe(11451999);
-      expect(schemas.MunicipioDetalhe.properties?.densidade.example).toBe(7528.26);
-      expect(schemas.UfResumo.properties?.cdUf.example).toBe('35');
-      expect(schemas.UfAgregado.properties?.totalMunicipios.example).toBe(645);
+      expect(exemplos('MunicipioDetalhe')).toEqual(
+        valores('MunicipioDetalhe', body),
+      );
+      expect(exemplos('SetoresResumo')).toEqual(body.setores);
+      expect(exemplos('SexoResumo')).toEqual(body.sexo);
+      expect(exemplos('UfResumo')).toEqual(body.uf);
+    });
+
+    it('os exemplos de UF são os valores reais de São Paulo', async () => {
+      const { body } = await get('/api/ufs/35').expect(200);
+
+      expect(exemplos('UfAgregado')).toEqual(body);
+    });
+
+    it('os exemplos do ranking são os do primeiro município de São Paulo', async () => {
+      const { body } = await get('/api/ufs/35/municipios').expect(200);
+
+      expect(exemplos('RankingItem')).toEqual(body.itens[0]);
+    });
+  });
+
+  // O contrato publicado e o corpo que a API devolve de verdade: um campo
+  // novo no service sem @ApiProperty, ou o contrário, falha aqui.
+  describe('contrato e código', () => {
+    it('GET /api/health devolve os campos de HealthResposta', async () => {
+      const { body } = await get('/api/health').expect(200);
+
+      expect(chaves(body)).toEqual(campos(esquemaDoCorpo('/api/health')));
+    });
+
+    it('GET /api/municipios?q= devolve itens com os campos de Sugestao', async () => {
+      const { body } = await get('/api/municipios?q=sao').expect(200);
+      const sugestao = esquemaDoCorpo('/api/municipios');
+
+      expect(chaves(body[0])).toEqual(campos(sugestao));
+      expect(chaves(body[0].uf)).toEqual(campos(aninhado(sugestao, 'uf')));
+    });
+
+    it('GET /api/municipios/:cdMun devolve os campos de MunicipioDetalhe e dos aninhados', async () => {
+      const { body } = await get('/api/municipios/3550308').expect(200);
+      const detalhe = esquemaDoCorpo('/api/municipios/{cdMun}');
+
+      expect(chaves(body)).toEqual(campos(detalhe));
+      expect(chaves(body.uf)).toEqual(campos(aninhado(detalhe, 'uf')));
+      expect(chaves(body.setores)).toEqual(campos(aninhado(detalhe, 'setores')));
+      expect(chaves(body.sexo)).toEqual(campos(aninhado(detalhe, 'sexo')));
+    });
+
+    it('GET /api/ufs devolve itens com os campos de UfResumo', async () => {
+      const { body } = await get('/api/ufs').expect(200);
+
+      expect(chaves(body[0])).toEqual(campos(esquemaDoCorpo('/api/ufs')));
+    });
+
+    it('GET /api/ufs/:cdUf devolve os campos de UfAgregado', async () => {
+      const { body } = await get('/api/ufs/35').expect(200);
+
+      expect(chaves(body)).toEqual(campos(esquemaDoCorpo('/api/ufs/{cdUf}')));
+    });
+
+    it('GET /api/ufs/:cdUf/municipios devolve os campos de RankingPagina e RankingItem', async () => {
+      const { body } = await get('/api/ufs/35/municipios').expect(200);
+      const pagina = esquemaDoCorpo('/api/ufs/{cdUf}/municipios');
+
+      expect(chaves(body)).toEqual(campos(pagina));
+      expect(chaves(body.itens[0])).toEqual(campos(aninhado(pagina, 'itens')));
     });
   });
 
@@ -350,6 +470,29 @@ describe('Documentação da API (e2e)', () => {
         .expect('Content-Type', /text\/html/);
 
       expect(resposta.text).toContain('swagger-ui');
+    });
+
+    it('serve o script que carrega o contrato na interface', async () => {
+      const resposta = await get('/api/docs/swagger-ui-init.js')
+        .buffer(true)
+        .parse((res, fim) => {
+          let texto = '';
+          res.setEncoding('utf8');
+          res.on('data', (parte: string) => (texto += parte));
+          res.on('end', () => fim(null, texto));
+        })
+        .expect(200)
+        .expect('Content-Type', /javascript/);
+
+      expect(resposta.body).toContain('/api/ufs/{cdUf}/municipios');
+    });
+
+    it('serve o pacote da interface', async () => {
+      await get('/api/docs/swagger-ui-bundle.js').expect(200);
+    });
+
+    it('não publica o contrato em YAML', async () => {
+      await get('/api/docs-yaml').expect(404);
     });
 
     it('sem o prefixo /api a documentação não existe', async () => {
