@@ -13,6 +13,7 @@ Companheiro de `SPEC.md`. Define o COMO que a spec deixa em aberto. Lido por `bm
 | Containers | Docker Compose, 2 serviços, multi-stage | `api` (Nest) e `web` (nginx servindo o build do React com proxy `/api` para `api`) |
 | Imagem base | `node:20-bookworm-slim` nos dois estágios da `api` | `better-sqlite3` é módulo nativo com binário pré-compilado para glibc. Em Alpine (musl) o `npm install` tenta compilar com `node-gyp` e falha sem `python3`, `make` e `g++` |
 | Prontidão | `healthcheck` na `api` em `/api/health`; `web` com `depends_on: api: condition: service_healthy` | Sem isso o nginx sobe antes do bootstrap e a primeira requisição devolve 502 |
+| Documentação da API | `@nestjs/swagger` 8.x | Gera OpenAPI 3 a partir dos controllers e das classes de resposta. A 8.x é a última que aceita NestJS 10; a 11 exige Nest 11 |
 | CI | GitHub Actions | Um workflow: testes back, testes front, `docker compose up --wait` com smoke test dos endpoints pelo nginx |
 | Node | 20 LTS | Versão instalada localmente e nas imagens |
 
@@ -41,6 +42,14 @@ Companheiro de `SPEC.md`. Define o COMO que a spec deixa em aberto. Lido por `bm
 ## Contrato da API
 
 Movido para o [README](../../../README.md#api) na story 5, porque quem clona não abre `_bmad-output/`. As regras que o contrato aplica continuam aqui e em `regras-de-dados.md`: prefixo `/api`, 400 para parâmetro inválido, 404 para município ou UF inexistente, `areaKm2` e `densidade` com 2 casas (R7).
+
+## Documentação da API
+
+Interface em `/api/docs`, JSON em `/api/docs-json`, configurados em `api/src/app.setup.ts` para valerem no `main.ts` e nos e2e. Expostos também na imagem Docker, atrás do proxy `/api` do nginx.
+
+Respostas são classes em `api/src/**/*.types.ts` com `@ApiProperty` (descrição e exemplo com valor real do Censo). A classe é a fonte única: tipa o service e gera o esquema. `web/src/api/tipos.ts` continua sendo a cópia manual do front.
+
+Cada rota tem `@ApiOperation`, `@ApiQuery`/`@ApiParam` com limites, a resposta de sucesso e as de erro (400, 404).
 
 ## Bootstrap do banco (executa a cada subida do `api`)
 

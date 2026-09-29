@@ -6,7 +6,19 @@ import {
   Param,
   Query,
 } from '@nestjs/common';
+import {
+  ApiBadRequestResponse,
+  ApiNotFoundResponse,
+  ApiOkResponse,
+  ApiOperation,
+  ApiParam,
+  ApiQuery,
+  ApiTags,
+} from '@nestjs/swagger';
+import { ErroResposta } from '../common/erro.types';
+import { TAG_UFS } from '../common/tags';
 import { UFS } from '../common/ufs';
+import { UfResumo } from '../municipios/municipios.types';
 import { UfsService } from './ufs.service';
 import { RankingPagina, UfAgregado, UfItem } from './ufs.types';
 
@@ -19,6 +31,24 @@ const PAGE_PADRAO = 1;
 const PAGE_MAXIMO = 100000;
 const PAGE_SIZE_PADRAO = 50;
 const PAGE_SIZE_MAXIMO = 100;
+
+/** `cdUf` aparece em duas rotas; a descrição do parâmetro fica em um lugar só. */
+const PARAM_CD_UF = {
+  name: 'cdUf',
+  description: 'Código da UF no IBGE, 2 dígitos',
+  schema: { type: 'string', pattern: CD_UF.source, example: '35' },
+} as const;
+
+/** O mesmo 404 vale para o agregado e para o ranking. */
+const UF_NAO_ENCONTRADA = {
+  description: 'Código fora do formato ou UF inexistente',
+  type: ErroResposta,
+  example: {
+    statusCode: 404,
+    message: 'UF 99 não encontrada',
+    error: 'Not Found',
+  },
+};
 
 /**
  * Converte um parâmetro de query em inteiro entre 1 e `maximo`. Ausente
@@ -43,18 +73,35 @@ function inteiroPositivo(nome: string, valor: unknown, padrao: number, maximo: n
   return numero;
 }
 
+@ApiTags(TAG_UFS)
 @Controller('ufs')
 export class UfsController {
   constructor(private readonly service: UfsService) {}
 
   /** `GET /api/ufs` -- as 27 UFs em ordem alfabética de nome. */
   @Get()
+  @ApiOperation({
+    summary: 'Lista de UFs',
+    description: 'As 27 UFs em ordem alfabética de nome, para o select da tela.',
+  })
+  @ApiOkResponse({
+    description: 'As 27 UFs',
+    type: [UfResumo],
+  })
   listar(): UfItem[] {
     return this.service.listar();
   }
 
   /** `GET /api/ufs/:cdUf` -- agregado do estado. Código fora do formato ou inexistente: 404. */
   @Get(':cdUf')
+  @ApiOperation({
+    summary: 'Agregados de uma UF',
+    description:
+      'População, área, densidade e quantidade de municípios do estado inteiro. As somas incluem território sem município (lagoas do RS).',
+  })
+  @ApiParam(PARAM_CD_UF)
+  @ApiOkResponse({ description: 'Agregados da UF', type: UfAgregado })
+  @ApiNotFoundResponse(UF_NAO_ENCONTRADA)
   obter(@Param('cdUf') cdUf: string): UfAgregado {
     const uf = this.validarCdUf(cdUf) ? this.service.obter(cdUf) : undefined;
     if (!uf) {
@@ -68,6 +115,47 @@ export class UfsController {
    * paginado (R6). `page` default 1, máximo 100000; `pageSize` default 50, máximo 100.
    */
   @Get(':cdUf/municipios')
+  @ApiOperation({
+    summary: 'Ranking de densidade dos municípios da UF',
+    description:
+      'Municípios do mais denso ao menos denso, com desempate pelo código, sempre paginado no servidor. Página além do fim devolve 200 com itens vazio.',
+  })
+  @ApiParam(PARAM_CD_UF)
+  // Decorators aplicam de baixo para cima: `pageSize` acima para `page` sair primeiro.
+  @ApiQuery({
+    name: 'pageSize',
+    required: false,
+    description: 'Itens por página',
+    schema: {
+      type: 'integer',
+      minimum: 1,
+      maximum: PAGE_SIZE_MAXIMO,
+      default: PAGE_SIZE_PADRAO,
+    },
+  })
+  @ApiQuery({
+    name: 'page',
+    required: false,
+    description: 'Página, a partir de 1',
+    schema: {
+      type: 'integer',
+      minimum: 1,
+      maximum: PAGE_MAXIMO,
+      default: PAGE_PADRAO,
+    },
+  })
+  @ApiOkResponse({ description: 'Página do ranking', type: RankingPagina })
+  @ApiBadRequestResponse({
+    description:
+      'page ou pageSize que não é inteiro positivo, está acima do máximo ou veio repetido',
+    type: ErroResposta,
+    example: {
+      statusCode: 400,
+      message: `Parâmetro pageSize deve ser no máximo ${PAGE_SIZE_MAXIMO}`,
+      error: 'Bad Request',
+    },
+  })
+  @ApiNotFoundResponse(UF_NAO_ENCONTRADA)
   ranking(
     @Param('cdUf') cdUf: string,
     @Query('page') page?: unknown,

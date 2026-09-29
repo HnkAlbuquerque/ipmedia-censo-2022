@@ -49,6 +49,10 @@ Teste técnico para vaga full stack na ipmedia. O enunciado entrega o `censo.sql
   - **intent:** README permite instalar, executar e entender as decisões.
   - **success:** README tem instalação, execução, cada decisão técnica com o porquê (R1 a R6 e stack) e a seção "o que faria com mais tempo".
 
+- **CAP-9**
+  - **intent:** Quem integra ou avalia a API consulta uma documentação interativa com todos os endpoints, parâmetros e formas de resposta, e obtém o contrato em formato legível por máquina.
+  - **success:** Com o compose de pé, `localhost:8080/api/docs` abre a interface e `GET /api/docs-json` devolve OpenAPI 3 com os cinco endpoints de negócio e o health, os parâmetros `q`, `page` e `pageSize`, e esquemas de resposta nomeados. Um teste e2e falha se um endpoint ou parâmetro sumir.
+
 ## Constraints
 
 - Stack fixada pelo enunciado: back Node.js com TypeScript, front em framework JS, SQLite, Docker. Escolhas concretas em `stack.md`.
@@ -63,6 +67,7 @@ Teste técnico para vaga full stack na ipmedia. O enunciado entrega o `censo.sql
 - A API só é exposta depois do bootstrap: healthcheck na `api` e o `web` espera `service_healthy`. Imagem base glibc por causa do `better-sqlite3` (`stack.md`).
 - Docker é a única forma de entrega e é testado ao fim de cada story. O proxy do Vite existe só para desenvolvimento.
 - Commits pequenos e frequentes com Conventional Commits. Sem squash. Artefatos do BMAD versionados.
+- Documentação da API gerada do código (classes de resposta anotadas), exposta em `/api/docs` também no Docker. A tabela do README permanece e aponta para ela; um teste impede que divirjam.
 - Entrega: um único repositório público (ou com acesso concedido), `censo.sqlite` na raiz, histórico preservado.
 
 ## Non-goals
@@ -86,7 +91,3 @@ Em uma máquina limpa, `docker compose up`, digitar "sao", ver São Paulo (SP) n
 - Um branch e um PR por story no GitHub, com `bmad-code-review` antes do merge, para espelhar o fluxo story para PR da vaga.
 - CI em GitHub Actions é a materialização de "do PR ao deploy"; o deploy real fica descrito no README como próximo passo.
 - A tabela `uf` não tem sigla; o back carrega um mapa estático `cd_uf` para sigla com as 27 entradas do IBGE.
-
-## Open Questions
-
-- O agregado da UF (CAP-4) vem no mesmo payload do ranking ou em endpoint próprio? `stack.md` propõe endpoint próprio (`GET /api/ufs/:cdUf`) e a story 4 assume isso; confirmar no checkpoint da story 4.
