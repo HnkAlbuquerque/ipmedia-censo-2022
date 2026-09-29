@@ -2,7 +2,7 @@
 title: 'Documentação da API com Swagger'
 type: 'feature'
 created: '2026-09-29'
-status: 'in-progress'
+status: 'in-review'
 route: 'dispatch'
 review_loop_iteration: 0
 baseline_commit: 'c2ebc4fa3cf98f37e6fafe47ca4e89311b8b8457'
@@ -86,6 +86,27 @@ context:
 ## Spec Change Log
 
 ## Review Triage Log
+
+| # | Origem | Achado | Veredito | Evidência / rota |
+|---|---|---|---|---|
+| 1 | blind-hunter | A SPEC promete "um teste impede que divirjam", mas nenhum teste compara corpos 200 reais com os esquemas publicados; só `ErroResposta` é comparado | medium | Verificado no e2e. Um campo novo na resposta sem `@ApiProperty` passaria → patch: e2e compara as chaves da resposta real com `properties` de cada esquema |
+| 2 | verification-gap / blind-hunter | Teste "exemplos são valores reais" compara literal com literal | low | Exemplos conferem hoje (revisores checaram contra o banco). Resolvido junto com o #1: exemplo comparado com a resposta real de São Paulo e SP → patch |
+| 3 | verification-gap / blind-hunter / edge-case | Teste da versão aceita qualquer semver; `1.0.0` padrão da lib passaria | low | Pré-verificado → patch: comparar com `version` do `package.json` |
+| 4 | verification-gap / blind-hunter / edge-case | Interface do Swagger verificada só pelo HTML de casca; scripts e bundle nunca requisitados, nem no e2e nem no smoke | medium | Pré-verificado: página em branco passaria verde → patch no e2e e no CI pelo nginx |
+| 5 | verification-gap / blind-hunter | `pattern` de `cdMun` e `cdUf` publicado e não asserido | low | Pré-verificado → patch |
+| 6 | verification-gap / blind-hunter / edge-case | `/api/docs-yaml` publicado por padrão, fora da spec, do README e dos testes | low | Reproduzido pelos revisores (200 `text/yaml`) → patch: `raw: ['json']` e teste de 404 |
+| 7 | blind-hunter / edge-case | `versaoDaApi()` sem fallback e falha da documentação derrubam a API no boot | false | Não há caminho demonstrado: o `package.json` é copiado para a imagem e o job `docker` do CI sobe o compose com `--wait`; falhar alto no boot é o comportamento correto para configuração quebrada |
+| 8 | blind-hunter | Avisos do `npm audit` que vieram com o Swagger 8 (`js-yaml`, `lodash`, altos) não aparecem na justificativa | medium | Verificado: 10 avisos de produção, 3 do swagger, 7 do Nest 10; correção de todos é subir o Nest de major → patch documental no README (decisão e "com mais tempo") |
+| 9 | blind-hunter | `q` com `minLength: 2` no esquema, mas o mínimo conta após normalizar | low | `q=%20%20a%20` passa no esquema e leva 400. `minLength` é necessário, não suficiente → patch na descrição |
+| 10 | blind-hunter | Exemplo de `SexoResumo`: homens + mulheres difere de `comDado` por 4; `cobertura` "com 4 casas" com exemplo `0.999` | low | Dado real (soma de `moradores`). Parece bug para quem lê → patch nas descrições ("até 4 casas") |
+| 11 | blind-hunter | `RankingItem.densidade` sem a nota da área crua que os outros dois têm | low | → patch na descrição |
+| 12 | blind-hunter / edge-case | Nomes das tags duplicados em `addTag` e `@ApiTags`; teste só conta 3 grupos | low | Tag sem acento passaria e perderia a descrição → patch: constantes compartilhadas e asserção de igualdade |
+| 13 | blind-hunter | README "Desenvolvimento" não diz que a documentação existe sem Docker | low | → patch |
+| 14 | verification-gap | README diz que o e2e "cobre os cinco endpoints"; são seis rotas | low | → patch |
+| 15 | blind-hunter | `ErroResposta.message` descrito como "em português"; o 404 do framework é em inglês | low | Verificado (`Cannot GET ...`) → patch na descrição |
+| 16 | blind-hunter | `operationId` como `MunicipiosController_buscar` e `info.contact` vazio | low | Só importa ao gerar clientes; nomes curtos colidem (`obter` em dois controllers) → rejeitado, nota em "com mais tempo" |
+| 17 | blind-hunter | Mudança de status da story não commitada | note | Commitada pelo orquestrador no fechamento |
+| 18 | edge-case | "Cinco commits": o branch tem sete (dois de spec antes) e o commit 2 também toca `app.setup.ts` | note | Ordem e estado verde confirmados pelo revisor; as tags pertencem ao commit dos decorators |
 
 ## Design Notes
 
