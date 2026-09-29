@@ -16,6 +16,7 @@ import {
   ApiTags,
 } from '@nestjs/swagger';
 import { ErroResposta } from '../common/erro.types';
+import { TAG_UFS } from '../common/tags';
 import { UFS } from '../common/ufs';
 import { UfResumo } from '../municipios/municipios.types';
 import { UfsService } from './ufs.service';
@@ -72,7 +73,7 @@ function inteiroPositivo(nome: string, valor: unknown, padrao: number, maximo: n
   return numero;
 }
 
-@ApiTags('UFs')
+@ApiTags(TAG_UFS)
 @Controller('ufs')
 export class UfsController {
   constructor(private readonly service: UfsService) {}

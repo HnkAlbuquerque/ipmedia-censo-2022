@@ -2,6 +2,7 @@ import { INestApplication } from '@nestjs/common';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
+import { TAG_HEALTH, TAG_MUNICIPIOS, TAG_UFS } from './common/tags';
 
 /**
  * Versão da API, lida do `package.json`. O caminho relativo vale nos dois
@@ -37,13 +38,15 @@ function configurarDocumentacao(app: INestApplication): void {
       'Consulta ao Censo Demográfico 2022 do IBGE por município e por UF.',
     )
     .setVersion(versaoDaApi())
-    .addTag('Municípios', 'Autocomplete e agregados por município')
-    .addTag('UFs', 'Lista de estados, agregados e ranking de densidade')
-    .addTag('Healthcheck', 'Prontidão da API, usada pelo Docker Compose')
+    .addTag(TAG_MUNICIPIOS, 'Autocomplete e agregados por município')
+    .addTag(TAG_UFS, 'Lista de estados, agregados e ranking de densidade')
+    .addTag(TAG_HEALTH, 'Prontidão da API, usada pelo Docker Compose')
     .build();
   const documento = SwaggerModule.createDocument(app, configuracao);
   SwaggerModule.setup('docs', app, documento, {
     useGlobalPrefix: true,
     jsonDocumentUrl: 'docs-json',
+    // Só o JSON: sem isto a biblioteca publica também `/api/docs-yaml`.
+    raw: ['json'],
   });
 }

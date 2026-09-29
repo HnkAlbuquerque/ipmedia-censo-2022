@@ -17,6 +17,7 @@ import {
 } from '@nestjs/swagger';
 import { ErroResposta } from '../common/erro.types';
 import { normalizar } from '../common/normalizar';
+import { TAG_MUNICIPIOS } from '../common/tags';
 import { MunicipiosService } from './municipios.service';
 import { MunicipioDetalhe, Sugestao } from './municipios.types';
 
@@ -27,7 +28,7 @@ const Q_MAXIMO = 100;
 /** Mínimo contado depois de normalizar: uma letra só casaria com metade do país. */
 const Q_MINIMO = 2;
 
-@ApiTags('Municípios')
+@ApiTags(TAG_MUNICIPIOS)
 @Controller('municipios')
 export class MunicipiosController {
   constructor(private readonly service: MunicipiosService) {}
@@ -48,7 +49,7 @@ export class MunicipiosController {
     name: 'q',
     required: true,
     description:
-      'Parte do nome do município. O mínimo é contado depois de normalizar (sem acento, espaços colapsados); o máximo, no texto cru. Repetir o parâmetro devolve 400.',
+      'Parte do nome do município. O mínimo é contado depois de normalizar (acentos removidos, espaços colapsados), então o minLength do esquema é condição necessária, não suficiente: "  a " tem 4 caracteres e devolve 400. O máximo é contado no texto cru. Repetir o parâmetro devolve 400.',
     schema: {
       type: 'string',
       minLength: Q_MINIMO,

@@ -13,7 +13,8 @@ export class ErroResposta {
   statusCode!: number;
 
   @ApiProperty({
-    description: 'Motivo do erro, em português',
+    description:
+      'Mensagem do erro: em português nas validações da API; o texto padrão do framework, em inglês, para rota desconhecida',
     example: 'Município 9999999 não encontrado',
   })
   message!: string;

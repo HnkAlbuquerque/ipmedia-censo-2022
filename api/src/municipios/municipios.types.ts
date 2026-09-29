@@ -81,15 +81,16 @@ export class SexoResumo {
   mulheres!: number;
 
   @ApiProperty({
-    description: 'População dos setores que têm dado por sexo',
+    description:
+      'População dos setores que têm dado por sexo: soma de demografia.moradores. Não precisa ser igual a homens + mulheres, que são somas de outras colunas do arquivo',
     type: 'integer',
     example: 11441079,
   })
   comDado!: number;
 
-  /** comDado / populacao, entre 0 e 1, 4 casas. */
+  /** comDado / populacao, entre 0 e 1, até 4 casas. */
   @ApiProperty({
-    description: 'comDado / populacao, entre 0 e 1, com 4 casas',
+    description: 'comDado / populacao, entre 0 e 1, com até 4 casas',
     minimum: 0,
     maximum: 1,
     example: 0.999,

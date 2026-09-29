@@ -83,7 +83,8 @@ export class RankingItem {
 
   /** hab/km², 2 casas (R7). */
   @ApiProperty({
-    description: 'Densidade em hab/km², 2 casas',
+    description:
+      'Densidade em hab/km², 2 casas, calculada sobre a área antes do arredondamento',
     example: 13416.96,
   })
   densidade!: number;

@@ -1,9 +1,10 @@
 import { Controller, Get } from '@nestjs/common';
 import { ApiOkResponse, ApiOperation, ApiTags } from '@nestjs/swagger';
+import { TAG_HEALTH } from '../common/tags';
 import { DbService } from '../db/db.service';
 import { HealthResposta } from './health.types';
 
-@ApiTags('Healthcheck')
+@ApiTags(TAG_HEALTH)
 @Controller('health')
 export class HealthController {
   constructor(private readonly dbService: DbService) {}
