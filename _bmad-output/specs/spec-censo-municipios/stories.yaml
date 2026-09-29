@@ -82,3 +82,20 @@
     dado por sexo (R2), a ordem do autocomplete (R4) e o healthcheck.
     "Com mais tempo": Playwright, filtro de nome no ranking, prefixo por palavra
     na busca, deploy em ECS na AWS.
+
+- id: "6"
+  title: Documentação da API com Swagger
+  description: >-
+    Documentação interativa em /api/docs e OpenAPI 3 em /api/docs-json, gerados
+    do código: classes de resposta anotadas e decorators nos controllers de
+    health, municípios e UFs. Cobre CAP-9 da SPEC.md.
+  spec_checkpoint: true
+  invoke_dev_with: >-
+    @nestjs/swagger 8.x (a 11 exige Nest 11). Converter as interfaces de
+    resposta em classes com @ApiProperty, com exemplos de valor real (São Paulo
+    capital, SP). Configurar em app.setup.ts para valer no main e nos e2e.
+    Expor também no Docker. Manter a tabela do README e acrescentar o link.
+    Commits separados por etapa, nesta ordem: dependência e configuração;
+    classes e decorators; testes e2e do OpenAPI; smoke no CI; README. Correções
+    da revisão em commits próprios. Definition of Done: código com testes na
+    mesma story.
