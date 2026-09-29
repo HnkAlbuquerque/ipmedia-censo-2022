@@ -1,4 +1,4 @@
-// Contrato da API (stack.md, "Contrato da API"). O front mantém uma cópia
+// Contrato da API (README.md, seção "API"). O front mantém uma cópia
 // manual em web/src/api/tipos.ts: mudou aqui, muda lá.
 
 import { UfResumo } from '../municipios/municipios.types';

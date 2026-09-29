@@ -10,3 +10,6 @@
 - source_spec: `_bmad-output/specs/spec-censo-municipios/stories/5-readme-com-instalacao-e-decisoes.md`
   summary: Apontar o contrato da API para `README.md#api` em `AGENTS.md` (Where things are) e nos comentários de `api/src/municipios/municipios.types.ts`, `api/src/ufs/ufs.types.ts` e `web/src/api/tipos.ts`, que ainda citam `stack.md`.
   evidence: A story 5 moveu o contrato para o README; achado dos revisores blind-hunter e edge-case. Resolver junto com o refresh do AGENTS.md.
+- source_spec: none
+  summary: RESOLVIDO em 2026-09-29 (branch docs/agents-refresh): os três itens sobre o AGENTS.md (stories 1, 2 e 5) foram aplicados via refresh do bmad-project-context, e os comentários de tipos passaram a apontar para README.md.
+  evidence: Bloco verificado contra 9a2ad4c; resta aberto apenas o item do contrato API/web (tipos compartilhados ou e2e de navegador).

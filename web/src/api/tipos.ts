@@ -1,4 +1,4 @@
-// Espelho manual do contrato da API (stack.md, "Contrato da API"), cujas
+// Espelho manual do contrato da API (README.md, seção "API"), cujas
 // fontes são api/src/municipios/municipios.types.ts (município) e
 // api/src/ufs/ufs.types.ts (UF): mudou lá, muda aqui. A API é a única fonte
 // dos números: o cliente formata, nunca agrega.
