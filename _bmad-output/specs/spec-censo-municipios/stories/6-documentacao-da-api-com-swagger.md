@@ -66,13 +66,13 @@ context:
 ## Tasks & Acceptance
 
 **Execution:**
-- [ ] `api/package.json`, `package-lock.json`, `api/src/app.setup.ts` -- instalar `@nestjs/swagger@^8.1.1`; em `configurarApp`, `DocumentBuilder` (título "Censo 2022 API", descrição de uma frase, versão do `package.json`) e `SwaggerModule.setup('docs', app, documento, { useGlobalPrefix: true, jsonDocumentUrl: 'docs-json' })` -- commit 1.
-- [ ] `api/src/common/erro.types.ts` -- classe `ErroResposta` (`statusCode`, `message`, `error`) no formato padrão do Nest -- commit 2.
-- [ ] `api/src/municipios/municipios.types.ts`, `api/src/ufs/ufs.types.ts`, `api/src/health/health.types.ts` -- interfaces viram classes com `@ApiProperty`; `SetoresResumo` e `SexoResumo` nomeadas; `HealthResposta` sai do controller -- commit 2.
-- [ ] `api/src/health/health.controller.ts`, `municipios.controller.ts`, `ufs.controller.ts` -- `@ApiTags`, `@ApiOperation`, `@ApiQuery`/`@ApiParam` com limites vindos das constantes, `@ApiOkResponse` com o tipo (array onde couber), `@ApiBadRequestResponse`/`@ApiNotFoundResponse` com `ErroResposta` -- commit 2.
-- [ ] `api/test/docs.e2e-spec.ts` -- todas as linhas da matriz que tocam `/api/docs` e `/api/docs-json`, no padrão dos e2e existentes -- commit 3.
-- [ ] `.github/workflows/ci.yml` -- no smoke: `curl -sf localhost:8080/api/docs-json | grep -q '"openapi":"3'` e `curl -sf -o /dev/null localhost:8080/api/docs` -- commit 4.
-- [ ] `README.md` -- na seção API, uma frase com o link `http://localhost:8080/api/docs` e o JSON; em "O que faria com mais tempo", trocar o item de tipos compartilhados por "gerar os tipos do front a partir do OpenAPI" -- commit 5.
+- [x] `api/package.json`, `package-lock.json`, `api/src/app.setup.ts` -- instalar `@nestjs/swagger@^8.1.1`; em `configurarApp`, `DocumentBuilder` (título "Censo 2022 API", descrição de uma frase, versão do `package.json`) e `SwaggerModule.setup('docs', app, documento, { useGlobalPrefix: true, jsonDocumentUrl: 'docs-json' })` -- commit 1.
+- [x] `api/src/common/erro.types.ts` -- classe `ErroResposta` (`statusCode`, `message`, `error`) no formato padrão do Nest -- commit 2.
+- [x] `api/src/municipios/municipios.types.ts`, `api/src/ufs/ufs.types.ts`, `api/src/health/health.types.ts` -- interfaces viram classes com `@ApiProperty`; `SetoresResumo` e `SexoResumo` nomeadas; `HealthResposta` sai do controller -- commit 2.
+- [x] `api/src/health/health.controller.ts`, `municipios.controller.ts`, `ufs.controller.ts` -- `@ApiTags`, `@ApiOperation`, `@ApiQuery`/`@ApiParam` com limites vindos das constantes, `@ApiOkResponse` com o tipo (array onde couber), `@ApiBadRequestResponse`/`@ApiNotFoundResponse` com `ErroResposta` -- commit 2.
+- [x] `api/test/docs.e2e-spec.ts` -- todas as linhas da matriz que tocam `/api/docs` e `/api/docs-json`, no padrão dos e2e existentes -- commit 3.
+- [x] `.github/workflows/ci.yml` -- no smoke: `curl -sf localhost:8080/api/docs-json | grep -q '"openapi":"3'` e `curl -sf -o /dev/null localhost:8080/api/docs` -- commit 4.
+- [x] `README.md` -- na seção API, uma frase com o link `http://localhost:8080/api/docs` e o JSON; em "O que faria com mais tempo", trocar o item de tipos compartilhados por "gerar os tipos do front a partir do OpenAPI" -- commit 5.
 
 **Acceptance Criteria:**
 - Given `docker compose up --build`, when se abre `localhost:8080/api/docs`, then a interface lista seis rotas em três grupos e cada resposta mostra o esquema com exemplo.
