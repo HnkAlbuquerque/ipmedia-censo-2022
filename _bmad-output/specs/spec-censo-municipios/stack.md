@@ -13,7 +13,7 @@ Companheiro de `SPEC.md`. Define o COMO que a spec deixa em aberto. Lido por `bm
 | Containers | Docker Compose, 2 serviços, multi-stage | `api` (Nest) e `web` (nginx servindo o build do React com proxy `/api` para `api`) |
 | Imagem base | `node:20-bookworm-slim` nos dois estágios da `api` | `better-sqlite3` é módulo nativo com binário pré-compilado para glibc. Em Alpine (musl) o `npm install` tenta compilar com `node-gyp` e falha sem `python3`, `make` e `g++` |
 | Prontidão | `healthcheck` na `api` em `/api/health`; `web` com `depends_on: api: condition: service_healthy` | Sem isso o nginx sobe antes do bootstrap e a primeira requisição devolve 502 |
-| CI | GitHub Actions | Um workflow: testes back, testes front, `docker compose build` |
+| CI | GitHub Actions | Um workflow: testes back, testes front, `docker compose up --wait` com smoke test dos endpoints pelo nginx |
 | Node | 20 LTS | Versão instalada localmente e nas imagens |
 
 ## Estrutura de pastas
@@ -40,19 +40,7 @@ Companheiro de `SPEC.md`. Define o COMO que a spec deixa em aberto. Lido por `bm
 
 ## Contrato da API
 
-Vive aqui até a story 5, que o move para o README (quem clona não abre `_bmad-output/`) e deixa neste ponto um link.
-
-Prefixo `/api`. JSON. Erros 400 para parâmetros inválidos, 404 para município/UF inexistente. `areaKm2` e `densidade` com 2 casas (R7).
-
-| Método e rota | Parâmetros | Resposta |
-|---|---|---|
-| `GET /api/municipios?q=` | `q` mínimo 2 chars | `[{ cdMun, nome, uf: { cdUf, sigla, nome } }]` até 10 itens; prefixo de palavra; ordem: nome exato primeiro, depois população (R4) |
-| `GET /api/municipios/:cdMun` | | `{ cdMun, nome, uf, populacao, areaKm2, densidade, setores: { total, urbanos, rurais, naoInformados }, sexo: { homens, mulheres, comDado, cobertura } }` |
-| `GET /api/ufs` | | `[{ cdUf, sigla, nome }]` 27 itens |
-| `GET /api/ufs/:cdUf` | | `{ cdUf, sigla, nome, populacao, areaKm2, densidade, totalMunicipios }` |
-| `GET /api/ufs/:cdUf/municipios?page=&pageSize=` | `page` default 1, `pageSize` default 50 máx 100 | `{ total, page, pageSize, itens: [{ posicao, cdMun, nome, populacao, areaKm2, densidade }] }` |
-
-`densidade` = populacao / areaKm2, em hab/km², arredondada a 2 casas no servidor. `cobertura` = comDado / populacao, entre 0 e 1.
+Movido para o [README](../../../README.md#api) na story 5, porque quem clona não abre `_bmad-output/`. As regras que o contrato aplica continuam aqui e em `regras-de-dados.md`: prefixo `/api`, 400 para parâmetro inválido, 404 para município ou UF inexistente, `areaKm2` e `densidade` com 2 casas (R7).
 
 ## Bootstrap do banco (executa a cada subida do `api`)
 

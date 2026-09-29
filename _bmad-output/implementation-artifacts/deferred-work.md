@@ -7,3 +7,6 @@
 - source_spec: `_bmad-output/specs/spec-censo-municipios/stories/4-tela-de-busca-por-estado.md`
   summary: Contrato API/web é verificado só contra a cópia manual de tipos de cada lado; um rename de campo passaria com as duas suítes verdes. Fechar com tipos compartilhados (pacote comum) ou e2e de navegador (Playwright).
   evidence: Achado do verification-gap na story 4, mesmo desenho da story 3; mitigado parcialmente pelos greps do compose no CI. Entra no "com mais tempo" do README.
+- source_spec: `_bmad-output/specs/spec-censo-municipios/stories/5-readme-com-instalacao-e-decisoes.md`
+  summary: Apontar o contrato da API para `README.md#api` em `AGENTS.md` (Where things are) e nos comentários de `api/src/municipios/municipios.types.ts`, `api/src/ufs/ufs.types.ts` e `web/src/api/tipos.ts`, que ainda citam `stack.md`.
+  evidence: A story 5 moveu o contrato para o README; achado dos revisores blind-hunter e edge-case. Resolver junto com o refresh do AGENTS.md.
