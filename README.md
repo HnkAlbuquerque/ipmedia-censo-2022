@@ -105,7 +105,7 @@ São Paulo tem 645 municípios e Roraima 15. Decidi que o ranking é sempre pagi
 | Imagem base da `api` | `node:20-bookworm-slim` nos dois estágios (o `web` final é `nginx:1.27-alpine`, sem módulo nativo) | `better-sqlite3` é módulo nativo com binário pré-compilado para glibc. Em Alpine (musl) o `npm ci` tenta compilar com `node-gyp` e falha |
 | Versão do driver | `better-sqlite3` fixado em 12.9.0 | 12.10+ não publica binário para Node 20. Sem o pin, o `npm ci` na imagem slim falhava |
 | Prontidão | healthcheck em `/api/health`; `web` com `depends_on: condition: service_healthy` | Sem isso o nginx sobe antes do bootstrap e a primeira requisição devolve 502 |
-| Documentação da API | `@nestjs/swagger` 8.x | Gera o OpenAPI 3 a partir do código. A 8.x é a última que aceita NestJS 10; a 11 exige Nest 11 |
+| Documentação da API | `@nestjs/swagger` 8.x | Gera o OpenAPI 3 a partir do código. A 8.x é a última que aceita NestJS 10; a 11 exige Nest 11. Custo da escolha: `npm audit --omit=dev` lista 10 avisos, 3 que chegaram com o `@nestjs/swagger` 8 (`@nestjs/swagger`, `js-yaml`, `lodash`) e 7 que já vêm do próprio NestJS 10. A correção de todos passa por subir o major do NestJS (só o do `qs` sai com `npm audit fix`, sem quebra) |
 | CI | GitHub Actions | Testes do back, testes e build do front, `docker compose up` com smoke test via nginx do health, das duas telas, do autocomplete, do detalhe, do agregado, do ranking e da documentação |
 
 ## Testes
@@ -113,7 +113,7 @@ São Paulo tem 645 municípios e Roraima 15. Decidi que o ranking é sempre pagi
 Back (`api/`):
 
 - `npm test` roda os unitários (`normalizar()`, mapa de UFs, healthcheck, services com um banco pequeno em memória) e o teste de integração do bootstrap, que roda contra o `censo.sqlite` real e confere os valores de referência: 5.571 linhas em `mun_agg`, 5.570 sem `'.'`, 203.080.756 habitantes, 8.510.417,25 km², São Paulo capital, idempotência e o arquivo de origem intacto.
-- `npm run test:e2e` sobe a aplicação com Supertest, um arquivo por módulo (`health`, `municipios`, `ufs`) e um para a documentação (`docs`), cada um com uma instância da app e `DB_WORK_PATH` temporário. Cobre os cinco endpoints com os casos de `regras-de-dados.md`: `sao`, `paulo`, `rio`, `bom jesus`, SP com 645 e Taboão da Serra, RR com 15, RS com 497 e as lagoas na área, soma das 27 UFs, validação de `q`, `page` e `pageSize`. O `docs` confere o contrato publicado: as seis rotas, os limites dos parâmetros, os esquemas e as respostas de erro.
+- `npm run test:e2e` sobe a aplicação com Supertest, um arquivo por módulo (`health`, `municipios`, `ufs`) e um para a documentação (`docs`), cada um com uma instância da app e `DB_WORK_PATH` temporário. Cobre os cinco endpoints de negócio e o health, seis rotas, com os casos de `regras-de-dados.md`: `sao`, `paulo`, `rio`, `bom jesus`, SP com 645 e Taboão da Serra, RR com 15, RS com 497 e as lagoas na área, soma das 27 UFs, validação de `q`, `page` e `pageSize`. O `docs` confere o contrato publicado: as seis rotas, os limites dos parâmetros, os esquemas e as respostas de erro.
 
 Front (`web/`):
 
@@ -133,7 +133,7 @@ cd api && npm ci && npm run start:dev     # API em http://localhost:3000
 cd web && npm ci && npm run dev           # front em http://localhost:5173
 ```
 
-O `vite.config.ts` faz proxy de `/api` para `http://localhost:3000`, mesmo papel do nginx no compose. O front só conhece caminhos relativos.
+O `vite.config.ts` faz proxy de `/api` para `http://localhost:3000`, mesmo papel do nginx no compose. O front só conhece caminhos relativos. A documentação da API também existe sem Docker: `http://localhost:3000/api/docs` direto na API, ou `http://localhost:5173/api/docs` pelo proxy do Vite.
 
 A API lê três variáveis de ambiente. `PORT` é a porta, padrão 3000, que o proxy do Vite e o nginx assumem. `DB_SOURCE_PATH` é o arquivo entregue, só leitura; padrão `../censo.sqlite` a partir de `api/`. `DB_WORK_PATH` é a cópia de trabalho, sobrescrita a cada subida; padrão `api/.data/censo.work.sqlite`, pasta ignorada pelo git. Na imagem Docker os valores são `/app/censo.sqlite` e `/data/censo.work.sqlite`, e o processo roda como usuário `node`.
 
@@ -154,6 +154,8 @@ O `.memlog.md` da pasta da spec é o diário de decisões do BMAD: cada linha é
 
 - Playwright de ponta a ponta contra o compose. Hoje o contrato entre API e front é verificado por uma cópia manual de tipos em cada lado e pelos greps do CI; um rename de campo passaria com as duas suítes verdes.
 - Gerar os tipos do front a partir do OpenAPI (`/api/docs-json`), pelo mesmo motivo: hoje `web/src/api/tipos.ts` é uma cópia manual das classes de resposta da API.
+- `operationId` com nome de domínio (`buscarMunicipios` em vez de `MunicipiosController_buscar`), para o cliente gerado ter funções com nomes legíveis.
+- Subir o major do NestJS (e do `@nestjs/swagger` junto), que é o que zera os avisos do `npm audit`.
 - Filtro por nome dentro do ranking da UF, para achar um município específico entre os 645 de SP.
 - Botão "tentar de novo" quando a lista de UFs falha ao carregar. Hoje só há a mensagem de erro.
 - Cache HTTP nas respostas da API. O dado é estático, então `Cache-Control` e `ETag` resolvem sem invalidação.
