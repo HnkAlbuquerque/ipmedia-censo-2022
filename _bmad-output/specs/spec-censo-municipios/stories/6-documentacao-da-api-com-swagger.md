@@ -2,7 +2,7 @@
 title: 'Documentação da API com Swagger'
 type: 'feature'
 created: '2026-09-29'
-status: 'in-review'
+status: 'done'
 route: 'dispatch'
 review_loop_iteration: 0
 baseline_commit: 'c2ebc4fa3cf98f37e6fafe47ca4e89311b8b8457'
@@ -81,6 +81,10 @@ context:
 
 ## Implementation Notes
 
+- Versão da API lida com `readFileSync` do `package.json` em vez de `import`: `resolveJsonModule` mudaria a raiz do `dist/` e quebraria `node dist/main`.
+- `allOf` nas referências aninhadas (`setores`, `sexo`, `uf`): é como o `@nestjs/swagger` emite uma propriedade com descrição e `$ref`; o e2e resolve as duas formas.
+- Correções da revisão em quatro commits próprios (`fix`, `test`, `ci`, `docs`), depois do commit da triagem.
+- Verificação final: api 57 unit/integração + 86 e2e; web 41; os 11 comandos do smoke do CI passam pelo nginx; `/api/docs-yaml` 404; OpenAPI 3.0.0 com 6 rotas e 10 esquemas.
 - Spec acima da faixa de 1600 tokens (~2350) por decisão de Henrique no checkpoint: o excesso é a matriz de casos do contrato e a ordem dos commits.
 
 ## Spec Change Log
